@@ -9,7 +9,7 @@ const config: TypeOrmModuleOptions = {
     database: 'doctor-patient-db',
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
     logging:true,
-    synchronize: true, // Set to false in production
+    synchronize: true ,
   };
   
   export default config;
