@@ -44,4 +44,19 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+## Patient Endpoints
+
+# PatientController
+
+POST /patient: Create a new patient.
+PUT /patient/:id: Update patient information.
+GET /patient/:id: Retrieve patient details by ID.
+DELETE /patient/:id: Delete a patient record.
+
+## Doctor Endpoints
+# DoctorController
+POST /doctors: Create a new doctor profile.
+PUT /doctors/:id: Update doctor information.
+GET /doctors/:id: Retrieve doctor details by ID.
+DELETE /doctors/:id: Delete a doctor profile.
 
