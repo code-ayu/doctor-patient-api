@@ -44,4 +44,44 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+## Patient Endpoints
+
+### PatientController
+
+POST /patient: Create a new patient.
+
+PUT /patient/:id: Update patient information.
+
+GET /patient/:id: Retrieve patient details by ID.
+
+DELETE /patient/:id: Delete a patient record.
+
+## Doctor Endpoints
+
+###  DoctorController
+
+POST /doctor: Create a new doctor profile.
+
+PUT /doctor/:id: Update doctor information.
+
+GET /doctor/:id: Retrieve doctor details by ID.
+
+GET /doctor/available/:id/:date : Check doctor Available on a date 
+
+DELETE /doctor/:id: Delete a doctor profile.
+
+## Appointment Endpoints
+
+### AppointmentController 
+
+POST /appointment: Book an appointment. 
+
+PATCH /appointment/:id: Update appointment details (e.g., change date/time, cancel appointment).
+
+GET /appointment/doctor/:doctorId/date/:date: List appointments for a specific doctor on a given day.
+
+GET /appointment: This endpoint retrieves all appointments.
+
+DELETE /appointment/:id :  This endpoint removes an existing appointment.
+
 
