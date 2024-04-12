@@ -15,5 +15,6 @@ export class CreateDoctorDto {
     @IsNotEmpty()
     availability : Date;
     
+    @IsNotEmpty()
     department:string;
 }

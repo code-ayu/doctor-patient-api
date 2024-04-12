@@ -51,18 +51,11 @@ export class AppointmentService {
     }); 
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  create(createAppointmentDto: CreateAppointmentDto) {
-    return 'This action adds a new appointment';
-  }
-
   findAll() {
     return this.appointmentRepo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} appointment`;
-  }
+
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
@@ -76,11 +69,6 @@ export class AppointmentService {
     if (!appointment.status) {
       return this.appointmentRepo.delete(id);
     }
-
-    return this.appointmentRepo.save(appointment);
-
-
-    
 
     return this.appointmentRepo.save(appointment);
     
