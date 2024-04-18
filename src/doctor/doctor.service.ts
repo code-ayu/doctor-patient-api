@@ -25,9 +25,16 @@ export class DoctorService {
 
   async create(createDoctorDto: CreateDoctorDto) {
     const doctor: Doctor = new Doctor();
-
     // Check if any past dates are included in availability
     const currentDate = new Date();
+    //check doctor is of atleast 18 years of age
+    const birthDate = new Date(createDoctorDto.dob);
+    const age = currentDate.getFullYear() - birthDate.getFullYear();
+    const isUnderage = age < 18;
+
+    if (isUnderage) {
+      throw new BadRequestException('Doctor must be at least 18 years old');
+    }
     for (const dateStr in createDoctorDto.availability) {
       if (typeof createDoctorDto.availability[dateStr] === 'string') {
         // Skip if the value is not an array of time slots
@@ -41,6 +48,7 @@ export class DoctorService {
 
     doctor.availability = createDoctorDto.availability;
     doctor.dob = createDoctorDto.dob;
+  
     doctor.name = createDoctorDto.name;
     doctor.contactDetails = createDoctorDto.contactDetails;
     doctor.department = createDoctorDto.department;
