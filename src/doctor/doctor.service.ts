@@ -144,16 +144,6 @@ export class DoctorService {
         throw new NotFoundException('Doctor not available at this Date'); // Date not found
       } 
 
-      const bookingsForTimeSlot = doctor.bookings[timeSlot];
-      const maxBookingsPerTimeSlot = 6;
-      if (bookingsForTimeSlot < maxBookingsPerTimeSlot) {
-        // Increment the booking count for the time slot
-        // if (!doctor.bookings) {
-        //   doctor.bookings = {};
-        // }
-        doctor.bookings[timeSlot] +=  1;
-      }
-
       // Check if the provided time slot exists for the given date
       const isTimeSlotAvailable = availableTimeSlots.includes(timeSlot);
       if (isTimeSlotAvailable) {
@@ -162,6 +152,31 @@ export class DoctorService {
       else {
         throw new NotFoundException('Doctor not Available at this time');
       }
+      } 
+    catch (error) {
+      throw new NotFoundException('Doctor not found');
+    }
+  }
+
+
+  async findDoctorAppointments(doctorId: string, appointmentDate : string){
+    try {
+      const doctor = await this.doctorRepo.findOne({ 
+        where: { id: doctorId } 
+      });
+
+
+      if (!doctor || !doctor.availability) {
+        throw new NotFoundException('Doctor not found');
+      }
+
+      // Check if the provided date exists in the availability data
+      const availableTimeSlots = doctor.availability[appointmentDate];
+      if (!availableTimeSlots) 
+      {
+        throw new NotFoundException('Doctor not available at this Date'); // Date not found
+      } 
+      return doctor;
       } 
     catch (error) {
       throw new NotFoundException('Doctor not found');

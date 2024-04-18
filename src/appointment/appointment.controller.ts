@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { Appointment } from './entities/appointment.entity';
+
 
 @Controller('appointment')
 export class AppointmentController {
@@ -13,20 +13,30 @@ export class AppointmentController {
   getAppointmentsForDoctorOnDate(
     @Param('doctorId') doctorId: string,
     @Param('date') date: string,
-  ): Promise<Appointment[]> {
+  ) {
     
     return this.appointmentService.getAppointmentsForDoctorOnDate(doctorId, date);
   }
+  
+  @Get()
+  findAll() {
+    return this.appointmentService.findAll();
+  }
+
+  @Get('available/:doctorId/:appointmentDate')
+  getAvailableTimeSlots(
+    @Param('doctorId') doctorId: string, 
+    @Param('appointmentDate') appointmentDate: string)
+  {
+    return this.appointmentService.getAvailableTimeSlots(doctorId , appointmentDate)
+  }
+
+
   @Post()
   async bookAppointment(@Body() createAppointmentDto: CreateAppointmentDto){
     return this.appointmentService.bookAppointment(createAppointmentDto);
   }
 
-
-  @Get()
-  findAll() {
-    return this.appointmentService.findAll();
-  }
 
 
   @Patch(':id')
