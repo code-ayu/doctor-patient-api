@@ -5,13 +5,13 @@ export class Patient {
   @PrimaryGeneratedColumn('uuid')
   id :string;
 
-  @Column({default:'abc'})
+  @Column({nullable : false})
   name: string;
 
   @Column({ type: 'date' })
   dob: Date;
 
-  @Column()
+  @Column({nullable : false})
   contactDetails: string;
   
 }

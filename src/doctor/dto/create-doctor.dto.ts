@@ -13,7 +13,7 @@ export class CreateDoctorDto {
     contactDetails: string;
 
     @IsNotEmpty()
-    availability : Date;
+    availability: { [date: string]: string[] };
     
     @IsNotEmpty()
     department:string;

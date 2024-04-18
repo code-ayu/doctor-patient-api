@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { Patient } from './entities/patient.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -11,6 +11,35 @@ export class PatientService {
   //inject patient repo
   constructor(@InjectRepository(Patient) private patientRepo : Repository<Patient> ) {}
 
+    //find doctor with contact details 
+    async findPatientByContactDetails(contactDetails: string): Promise<Patient[]> {
+      const options: FindManyOptions<Patient> = {
+        where: { contactDetails }, // Filter doctors by contact details
+      };
+      
+      const patient = await this.patientRepo.find(options);
+      if (!patient || patient.length === 0) {
+        return [];
+      }
+      return patient;
+    }
+
+
+        //find doctor with contact details 
+        async findPatientByContactDetailsAndId(contactDetails: string): Promise<Patient[]> {
+          const options: FindManyOptions<Patient> = {
+            where: { contactDetails }, // Filter doctors by contact details
+          };
+          
+          const patient = await this.patientRepo.find(options);
+          if (!patient || patient.length === 0) {
+            return [];
+          }
+          return patient;
+        }
+    
+
+
 
   async create(createPatientDto: CreatePatientDto)  {
     // eslint-disable-next-line prefer-const
@@ -18,6 +47,10 @@ export class PatientService {
     patient.name = createPatientDto.name;
     patient.dob = createPatientDto.dob;
     patient.contactDetails = createPatientDto.contactDetails;
+    const existingPatient = await this.findPatientByContactDetails(patient.contactDetails);
+    if (existingPatient.length > 0) {
+      throw new BadRequestException('Patient contact details already exist');
+    }
     return this.patientRepo.save(patient);
   }
 
@@ -54,14 +87,25 @@ export class PatientService {
   }
 
   async update(id: string, updatePatientDto: UpdatePatientDto) {
+    const { contactDetails } = updatePatientDto;
+
+    // Check if the new contactDetails already exist for another patient
+    const existingPatient = await this.patientRepo.findOne({ where: { contactDetails } });
+    if (existingPatient && existingPatient.id !== id) {
+      throw new ConflictException('Contact details already exist for another patient');
+    }
+
+    // Update patient details
     // eslint-disable-next-line prefer-const
     let patient : Patient = new Patient();
+    patient.id = id;
     patient.name = updatePatientDto.name;
     patient.dob = updatePatientDto.dob;
     patient.contactDetails = updatePatientDto.contactDetails;
-    patient.id = id;
+    // Save the updated patient entity
     return this.patientRepo.save(patient);
   }
+
 
   async remove(id: number) {
     try{

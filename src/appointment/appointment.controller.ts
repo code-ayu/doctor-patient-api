@@ -12,10 +12,10 @@ export class AppointmentController {
   @Get('doctor/:doctorId/date/:date')
   getAppointmentsForDoctorOnDate(
     @Param('doctorId') doctorId: string,
-    @Param('date') date: Date,
+    @Param('date') date: string,
   ): Promise<Appointment[]> {
-    const parsedDate = new Date(date);
-    return this.appointmentService.getAppointmentsForDoctorOnDate(doctorId, parsedDate);
+    
+    return this.appointmentService.getAppointmentsForDoctorOnDate(doctorId, date);
   }
   @Post()
   async bookAppointment(@Body() createAppointmentDto: CreateAppointmentDto){

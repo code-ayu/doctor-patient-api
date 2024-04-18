@@ -32,8 +32,4 @@ export class DoctorController {
     return this.doctorService.remove(id);
   }
 
-  @Get('/available/:id/:date')
-  findDoctorByIdAndAvailability(@Param('id') doctorId: string, @Param('date') availability: Date){
-    return this.doctorService.findDoctorByIdAndAvailability(doctorId , availability);
-  }
 }

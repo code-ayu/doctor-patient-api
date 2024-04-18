@@ -1,4 +1,4 @@
-import {  Injectable, NotFoundException} from '@nestjs/common';
+import {  ConflictException, Injectable, NotFoundException} from '@nestjs/common';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,6 +18,9 @@ export class AppointmentService {
     private appointmentRepo: Repository<Appointment>,
   ) {}
 
+
+
+  
   //book an appointment with the doctor
   async bookAppointment(createAppointmentDto : CreateAppointmentDto) {
     //Check if patient is there
@@ -28,21 +31,37 @@ export class AppointmentService {
     }
 
     // Check if doctor is there 
-    const doctor = await this.doctorService.findDoctorByIdAndAvailability(createAppointmentDto.doctorId , createAppointmentDto.appointmentDate);
+    const doctor = await this.doctorService.findDoctorByIdAndAppointment(createAppointmentDto.doctorId , createAppointmentDto.appointmentDate , createAppointmentDto.timeSlot);
     //console.log(doctor)
     if (!doctor) {
       throw new NotFoundException('Doctor not found');
     }
+
+    const existingAppointment = await this.appointmentRepo.findOne({
+      where: {
+        patientId: createAppointmentDto.patientId,
+        doctorId: createAppointmentDto.doctorId,
+        appointmentDate: createAppointmentDto.appointmentDate,
+        timeSlot: createAppointmentDto.timeSlot,
+      },
+    });
+    if (existingAppointment) {
+      throw new ConflictException('Appointment already exists');
+    }
+    else {
     // Create appointment
     const appointment : Appointment = new Appointment();
     appointment.patientId = createAppointmentDto.patientId;
     appointment.doctorId = createAppointmentDto.doctorId;
     appointment.appointmentDate = createAppointmentDto.appointmentDate;
+    appointment.timeSlot = createAppointmentDto.timeSlot;
     return this.appointmentRepo.save(appointment);
+    }
   }
 
+
   //find all appointments for a doctor on given date
-  async getAppointmentsForDoctorOnDate(doctorId: string, date: Date): Promise<Appointment[]> {
+  async getAppointmentsForDoctorOnDate(doctorId: string, date: string): Promise<Appointment[]> {
     return this.appointmentRepo.find({
       where: {
         doctorId,
@@ -58,20 +77,33 @@ export class AppointmentService {
 
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
+  async update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
+
     const appointment : Appointment = new Appointment();
+    const existingAppointment = await this.appointmentRepo.findOne({
+      where: {
+        patientId: updateAppointmentDto.patientId,
+        doctorId: updateAppointmentDto.doctorId,
+        appointmentDate: updateAppointmentDto.appointmentDate,
+        timeSlot: updateAppointmentDto.timeSlot,
+      },
+    });
     appointment.id = id;
     appointment.patientId = updateAppointmentDto.patientId;
     appointment.doctorId = updateAppointmentDto.doctorId;
     appointment.appointmentDate = updateAppointmentDto.appointmentDate;
-    appointment.status = updateAppointmentDto.status;
-
+    appointment.timeSlot = updateAppointmentDto.timeSlot;
+    appointment.status = updateAppointmentDto.status; 
     if (!appointment.status) {
-      return this.appointmentRepo.delete(id);
+      this.appointmentRepo.delete(id);
+      return {message : "Appointment canceled succesfully"}
     }
 
-    return this.appointmentRepo.save(appointment);
+    if (existingAppointment) {
+      throw new ConflictException('Appointment already exists');
+    }
     
+    return this.appointmentRepo.save(appointment);
   }
 
   remove(id: string) {

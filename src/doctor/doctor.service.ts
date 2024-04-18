@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
@@ -24,20 +24,36 @@ export class DoctorService {
   }
 
   async create(createDoctorDto: CreateDoctorDto) {
-    // eslint-disable-next-line prefer-const
-    let doctor : Doctor = new Doctor();
+    const doctor: Doctor = new Doctor();
+
+    // Check if any past dates are included in availability
+    const currentDate = new Date();
+    for (const dateStr in createDoctorDto.availability) {
+      if (typeof createDoctorDto.availability[dateStr] === 'string') {
+        // Skip if the value is not an array of time slots
+        continue;
+      }
+      const date = new Date(dateStr);
+      if (date < currentDate) {
+        throw new BadRequestException('Cannot add availability for past dates');
+      }
+    }
+
+    doctor.availability = createDoctorDto.availability;
     doctor.dob = createDoctorDto.dob;
     doctor.name = createDoctorDto.name;
-    doctor.availability = createDoctorDto.availability;
     doctor.contactDetails = createDoctorDto.contactDetails;
-    doctor.department = createDoctorDto.department
-    // finding doctor already in db
-    const doctor1 = await this.findDoctorsByContactDetails(doctor.contactDetails)
-    if(doctor1.length > 0){
-      return {message : "Doctor contact details already exist"}
+    doctor.department = createDoctorDto.department;
+
+    // Finding doctor already in db
+    const existingDoctor = await this.findDoctorsByContactDetails(doctor.contactDetails);
+    if (existingDoctor.length > 0) {
+      throw new BadRequestException('Doctor contact details already exist');
     }
+
     return this.doctorRepo.save(doctor);
   }
+
 
   //get all doctors 
   async findAll() {
@@ -73,6 +89,13 @@ export class DoctorService {
       if (!doctor) {
         throw new NotFoundException('Doctor not found');
       }
+      const { contactDetails } = updateDoctorDto;
+
+    // Check if the new contactDetails already exist for another doctor
+    const existingDoctor = await this.doctorRepo.findOne({ where: { contactDetails } });
+    if (existingDoctor && existingDoctor.id !== id) {
+      throw new ConflictException('Contact details already exist for another Doctor');
+    }
 
       doctor.dob = updateDoctorDto.dob;
       doctor.name = updateDoctorDto.name;
@@ -87,6 +110,7 @@ export class DoctorService {
     }
   }
 
+
   //delete doctor
   async remove(id: string) {
     try {
@@ -100,19 +124,46 @@ export class DoctorService {
     }
   }
 
+
   //Doctor if and availabiltiy check 
-  async findDoctorByIdAndAvailability(doctorId: string, availability: Date): Promise<Doctor> {
+  async findDoctorByIdAndAppointment(doctorId: string, appointmentDate : string , timeSlot : string): Promise<Doctor> {
     try {
       const doctor = await this.doctorRepo.findOne({ 
-        where: { id: doctorId, availability: availability } 
+        where: { id: doctorId } 
       });
 
-      if (!doctor) {
+
+      if (!doctor || !doctor.availability) {
         throw new NotFoundException('Doctor not found');
       }
 
-      return doctor;
-    } catch (error) {
+      // Check if the provided date exists in the availability data
+      const availableTimeSlots = doctor.availability[appointmentDate];
+      if (!availableTimeSlots) 
+      {
+        throw new NotFoundException('Doctor not available at this Date'); // Date not found
+      } 
+
+      const bookingsForTimeSlot = doctor.bookings[timeSlot];
+      const maxBookingsPerTimeSlot = 6;
+      if (bookingsForTimeSlot < maxBookingsPerTimeSlot) {
+        // Increment the booking count for the time slot
+        // if (!doctor.bookings) {
+        //   doctor.bookings = {};
+        // }
+        doctor.bookings[timeSlot] +=  1;
+      }
+
+      // Check if the provided time slot exists for the given date
+      const isTimeSlotAvailable = availableTimeSlots.includes(timeSlot);
+      if (isTimeSlotAvailable) {
+        return doctor;
+      }
+      else {
+        throw new NotFoundException('Doctor not Available at this time');
+      }
+      } 
+    catch (error) {
       throw new NotFoundException('Doctor not found');
     }
   }

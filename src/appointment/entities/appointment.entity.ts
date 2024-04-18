@@ -11,8 +11,11 @@ export class Appointment {
   @Column({type : 'uuid'})
   doctorId: string;
 
-  @Column({ type: 'date' ,nullable : false })
-  appointmentDate: Date;
+  @Column({nullable : false , default : "" })
+  appointmentDate:string ;
+
+  @Column({default : ""})
+  timeSlot : string;
 
   @Column({default: true})
   status : boolean;

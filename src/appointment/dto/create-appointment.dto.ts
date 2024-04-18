@@ -9,7 +9,11 @@ export class CreateAppointmentDto {
     doctorId: string;
     
     @IsNotEmpty()
-    appointmentDate: Date;
+    appointmentDate: string;
+
+    @IsNotEmpty()
+    timeSlot : string;
+
 
     status: boolean;
 }
