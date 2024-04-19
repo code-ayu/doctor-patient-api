@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete} from '@nestjs/common';
 import { PatientService } from './patient.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
@@ -20,11 +20,7 @@ export class PatientController {
 
   @Get(':id')
   async findOneById(@Param('id') id: string): Promise<Patient> {
-    const patient = await this.patientService.findOneById(id);
-    if(!patient){
-      throw new NotFoundException('Patient not found');
-    }
-    return patient;
+    return this.patientService.findOneById(id);
 
   }
 
@@ -35,6 +31,6 @@ export class PatientController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.patientService.remove(+id);
+    return this.patientService.remove(id);
   }
 }

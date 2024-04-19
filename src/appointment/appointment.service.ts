@@ -61,7 +61,7 @@ export class AppointmentService {
 
 
   //find all appointments for a doctor on given date
-  async getAppointmentsForDoctorOnDate(doctorId: string, date: string): Promise<Appointment[]> {
+  async getAppointmentsForDoctorOnDate(doctorId: string, date: string) {
     return this.appointmentRepo.find({
       where: {
         doctorId,
@@ -110,7 +110,7 @@ export class AppointmentService {
     return this.appointmentRepo.delete(id);
   }
 
-  async getBookedTimeSlots(doctorId: string, date: string): Promise<string[]> {
+  async getBookedTimeSlots(doctorId: string, date: string){
     const appointments = await this.appointmentRepo.find({
       where: {
         doctorId,

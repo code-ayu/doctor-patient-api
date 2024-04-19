@@ -23,23 +23,7 @@ export class PatientService {
       }
       return patient;
     }
-
-
-        //find doctor with contact details 
-        async findPatientByContactDetailsAndId(contactDetails: string): Promise<Patient[]> {
-          const options: FindManyOptions<Patient> = {
-            where: { contactDetails }, // Filter doctors by contact details
-          };
-          
-          const patient = await this.patientRepo.find(options);
-          if (!patient || patient.length === 0) {
-            return [];
-          }
-          return patient;
-        }
     
-
-
 
   async create(createPatientDto: CreatePatientDto)  {
     // eslint-disable-next-line prefer-const
@@ -47,10 +31,19 @@ export class PatientService {
     patient.name = createPatientDto.name;
     patient.dob = createPatientDto.dob;
     patient.contactDetails = createPatientDto.contactDetails;
+
     const existingPatient = await this.findPatientByContactDetails(patient.contactDetails);
     if (existingPatient.length > 0) {
       throw new BadRequestException('Patient contact details already exist');
     }
+    
+
+    if (patient.dob && new Date(patient.dob) > new Date()) {
+      throw new BadRequestException('Date of birth cannot be in the future');
+    }
+    //console.log(new Date()); 
+    //console.log(patient.dob, currentDate, patient.dob > currentDate);
+    
     return this.patientRepo.save(patient);
   }
 
@@ -58,7 +51,7 @@ export class PatientService {
     try {
       return this.patientRepo.find();
     }
-    catch
+    catch (error)
     {
       return [];
     }
@@ -107,13 +100,13 @@ export class PatientService {
   }
 
 
-  async remove(id: number) {
+  async remove(id: string) {
     try{
       const patient = await this.patientRepo.delete(id);
       if (patient.affected === 0 ){
         throw new NotFoundException('Patient Not Found');
       }
-      return patient;
+      return {message: "Patient record deleted successfully"};
     }
     catch ( error) {
       throw new NotFoundException('Patient Not Found');

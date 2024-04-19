@@ -11,7 +11,7 @@ export class DoctorService {
   constructor(@InjectRepository(Doctor) private  doctorRepo : Repository<Doctor>){}
   
   //find doctor with contact details 
-  async findDoctorsByContactDetails(contactDetails: string): Promise<Doctor[]> {
+  async findDoctorsByContactDetails(contactDetails: string) {
     const options: FindManyOptions<Doctor> = {
       where: { contactDetails }, // Filter doctors by contact details
     };
@@ -134,7 +134,7 @@ export class DoctorService {
 
 
   //Doctor if and availabiltiy check 
-  async findDoctorByIdAndAppointment(doctorId: string, appointmentDate : string , timeSlot : string): Promise<Doctor> {
+  async findDoctorByIdAndAppointment(doctorId: string, appointmentDate : string , timeSlot : string) {
     try {
       const doctor = await this.doctorRepo.findOne({ 
         where: { id: doctorId } 

@@ -18,7 +18,7 @@ export class Doctor {
     @Column({ type: 'jsonb', nullable: false })
     availability: { [date: string]: string[] };
 
-    @Column()
+    @Column({nullable : false})
     department: string;
 
   }
