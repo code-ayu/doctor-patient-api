@@ -33,15 +33,17 @@ export class AppointmentController {
 
 
   @Post()
-  async bookAppointment(@Body() createAppointmentDto: CreateAppointmentDto){
+  async bookAppointment(
+    @Body() createAppointmentDto: CreateAppointmentDto){
     return this.appointmentService.bookAppointment(createAppointmentDto);
   }
 
 
-
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAppointmentDto: UpdateAppointmentDto) {
-    return this.appointmentService.update(id, updateAppointmentDto);
+  async update(
+    @Param('id') id: string, 
+    @Body() updateAppointmentDto: UpdateAppointmentDto) {
+    return await this.appointmentService.update(id, updateAppointmentDto);
   }
 
   @Delete(':id')

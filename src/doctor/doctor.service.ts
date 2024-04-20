@@ -1,4 +1,5 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException,  Injectable, NotFoundException } from '@nestjs/common';
+//import {ConflictException} from  '@nestjs/common';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
@@ -97,18 +98,19 @@ export class DoctorService {
       if (!doctor) {
         throw new NotFoundException('Doctor not found');
       }
-      const { contactDetails } = updateDoctorDto;
+
+      //const { contactDetails } = updateDoctorDto;
 
     // Check if the new contactDetails already exist for another doctor
-    const existingDoctor = await this.doctorRepo.findOne({ where: { contactDetails } });
-    if (existingDoctor && existingDoctor.id !== id) {
-      throw new ConflictException('Contact details already exist for another Doctor');
-    }
+    // const existingDoctor = await this.doctorRepo.findOne({ where: { contactDetails } });
+    // if (existingDoctor && existingDoctor.id !== id) {
+    //   throw new ConflictException('Contact details already exist for another Doctor');
+    // }
 
       doctor.dob = updateDoctorDto.dob;
       doctor.name = updateDoctorDto.name;
       doctor.availability = updateDoctorDto.availability;
-      doctor.contactDetails = updateDoctorDto.contactDetails;
+      //doctor.contactDetails = updateDoctorDto.contactDetails;
       doctor.department = updateDoctorDto.department;
       doctor.id = id;
       const updatedDoctor = await this.doctorRepo.save(doctor);
@@ -126,7 +128,7 @@ export class DoctorService {
       if (doctor.affected === 0) {
         throw new NotFoundException('Doctor not found');
       }
-      return doctor;
+      return {message: "Doctor record deleted successfully"};
     } catch (error) {
       throw new NotFoundException('Doctor not found');
     }

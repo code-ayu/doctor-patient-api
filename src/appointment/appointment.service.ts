@@ -3,7 +3,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { PatientService } from '../patient/patient.service';
 import { DoctorService } from '../doctor/doctor.service';
 
@@ -74,37 +74,77 @@ export class AppointmentService {
     return this.appointmentRepo.find();
   }
 
+  async findOneById(id: string | FindOneOptions<Appointment>) {
+    let options: FindOneOptions<Appointment>;
+    if (typeof id === 'string') {
+      options = { where: { id } };
+    } else {
+      options = id;
+    }
+
+    try{
+      const appointment = await this.appointmentRepo.findOne(options);
+      if (!appointment) {
+        throw new NotFoundException('Appointment not found');
+      }
+      return appointment;
+    }
+    catch (error){
+      throw new NotFoundException('Appointment not found');
+    }
+   
+  }
 
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
-
-    const appointment : Appointment = new Appointment();
-    const existingAppointment = await this.appointmentRepo.findOne({
-      where: {
-        patientId: updateAppointmentDto.patientId,
-        doctorId: updateAppointmentDto.doctorId,
-        appointmentDate: updateAppointmentDto.appointmentDate,
-        timeSlot: updateAppointmentDto.timeSlot,
-      },
-    });
-    appointment.id = id;
+async update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
+  try {
+    // Check if the appointment exists
+    const appointment = await this.findOneById(id);
+    console.log(appointment.status);
+    console.log(JSON.stringify(updateAppointmentDto));
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+      // Update appointment details
     appointment.patientId = updateAppointmentDto.patientId;
     appointment.doctorId = updateAppointmentDto.doctorId;
     appointment.appointmentDate = updateAppointmentDto.appointmentDate;
     appointment.timeSlot = updateAppointmentDto.timeSlot;
-    appointment.status = updateAppointmentDto.status; 
-    if (!appointment.status) {
-      this.appointmentRepo.delete(id);
-      return {message : "Appointment canceled succesfully"}
-    }
+    appointment.status = updateAppointmentDto.status;
+    console.log(appointment.status , updateAppointmentDto.status);
 
-    if (existingAppointment) {
-      throw new ConflictException('Appointment already exists');
-    }
+  // Check if another appointment with the same details exists
+  const existingAppointment = await this.appointmentRepo.findOne({
+    where: {
+        patientId: updateAppointmentDto.patientId,
+        doctorId: updateAppointmentDto.doctorId,
+        appointmentDate: updateAppointmentDto.appointmentDate,
+        timeSlot: updateAppointmentDto.timeSlot,
+    },
+  });
+
+  // If appointment status indicates cancellation
+  console.log(updateAppointmentDto.status);
+  if (updateAppointmentDto.status === false) {
     
-    return this.appointmentRepo.save(appointment);
+    await this.appointmentRepo.delete(id);
+    return { message: "Appointment canceled successfully" };
   }
+
+  // If there's a conflicting appointment
+  if (existingAppointment && existingAppointment.id !== id) {
+    throw new ConflictException('Appointment already exists');
+  }
+
+
+
+  return this.appointmentRepo.save(appointment);
+  } catch (error) {
+      throw error; // Throw the caught error
+  }
+}
+
 
   async remove(id: string) {
     return this.appointmentRepo.delete(id);

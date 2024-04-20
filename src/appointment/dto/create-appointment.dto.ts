@@ -14,6 +14,5 @@ export class CreateAppointmentDto {
     @IsNotEmpty()
     timeSlot : string;
 
-
     status: boolean;
 }

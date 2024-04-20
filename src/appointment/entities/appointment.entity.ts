@@ -17,7 +17,7 @@ export class Appointment {
   @Column({nullable : false})
   timeSlot : string;
 
-  @Column({default: true})
+  @Column({nullable :false})
   status : boolean;
 }
 
